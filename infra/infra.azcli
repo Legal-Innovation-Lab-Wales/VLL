@@ -120,20 +120,28 @@ az network nsg rule create \
 
 # I have seen this timeout so retry until it works
 # https://unix.stackexchange.com/questions/82598/how-do-i-write-a-retry-logic-in-script-to-keep-retrying-to-run-it-upto-5-times
+# Retry copying files to the Azure VM until successful or after 5 attempts
 n=0
 until [ "$n" -ge 5 ]
 do
-#    scp -o StrictHostKeyChecking=no ../secrets/www_hmsoftware_org.pem dave@${dnsname}.westeurope.cloudapp.azure.com:/certs/ && break
-   scp -o StrictHostKeyChecking=no ../secrets/www_arlawesi_org_uk.pem dave@${dnsname}.westeurope.cloudapp.azure.com: && break
+   # Copy www_arlawesi_org_uk.pem to Azure VM
+   scp -o StrictHostKeyChecking=no ../secrets/www_arlawesi_org_uk.pem a.h.whitter-jones@${dnsname}.westeurope.cloudapp.azure.com:
+   # Check if the copy was successful, if so, break the loop
+   if [ $? -eq 0 ]; then
+      break
+   fi
    n=$((n+1)) 
    sleep 15
 done
 
-scp -o StrictHostKeyChecking=no ../secrets/www_arlawesi_org_uk.key dave@${dnsname}.westeurope.cloudapp.azure.com:
+# Copy www_arlawesi_org_uk.key to Azure VM
+scp -o StrictHostKeyChecking=no ../secrets/www_arlawesi_org_uk.key a.h.whitter-jones@${dnsname}.westeurope.cloudapp.azure.com:
 
-scp -o StrictHostKeyChecking=no ../secrets/kestrel.service dave@${dnsname}.westeurope.cloudapp.azure.com:
+# Copy kestrel.service to Azure VM
+scp -o StrictHostKeyChecking=no ../secrets/kestrel.service a.h.whitter-jones@${dnsname}.westeurope.cloudapp.azure.com:
 
-scp -o StrictHostKeyChecking=no ../secrets/vllshare.cred dave@${dnsname}.westeurope.cloudapp.azure.com:
+# Copy vllshare.cred to Azure VM
+scp -o StrictHostKeyChecking=no ../secrets/vllshare.cred a.h.whitter-jones@${dnsname}.westeurope.cloudapp.azure.com:
 
 # gets .NET, clones source code, does a release build, starts systemd kestrel service
 # systemd reads from file created on the vm above
